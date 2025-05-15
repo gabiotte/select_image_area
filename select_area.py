@@ -19,16 +19,17 @@ def selecionar_area(imagem, imagem_path):
             return None
 
         print(f"📐 Tamanho selecionado: {w} x {h} = {w*h} pixels")
-        print("Pressione 'R' para refazer ou 'C' para confirmar.")
+        print("Pressione 'R' para refazer, 'C' para confirmar ou 'A' para aplicar a todos.")
 
         while True:
-            tecla = input("Digite sua escolha (R/C): ").strip().upper()
+            tecla = input("Digite sua escolha (R/C/A): ").strip().upper()
             if tecla == "R":
                 break  # repete seleção
-            elif tecla == "C":
-                return x, y, w, h
+            elif tecla in ("C", "A"):
+                aplicar_todos = (tecla == "A")
+                return x, y, w, h, aplicar_todos
             else:
-                print("Entrada inválida. Digite 'R' ou 'C'.")
+                print("Entrada inválida. Digite 'R', 'C' ou 'A'.")
 
 def processar_pasta(pasta_imagens):
     extensoes_validas = (".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff")
@@ -44,7 +45,10 @@ def processar_pasta(pasta_imagens):
         writer = csv.writer(csvfile)
         writer.writerow(["Imagem", "x", "y", "w", "h"])
 
-        for nome_arquivo in imagens:
+        coordenadas_fixas = None
+        aplicar_para_todas = False
+
+        for i, nome_arquivo in enumerate(imagens):
             caminho_completo = os.path.join(pasta_imagens, nome_arquivo)
             imagem = cv2.imread(caminho_completo)
 
@@ -52,11 +56,18 @@ def processar_pasta(pasta_imagens):
                 print(f"Erro ao carregar {caminho_completo}. Pulando.")
                 continue
 
-            resultado = selecionar_area(imagem, nome_arquivo)
-            if resultado:
-                x, y, w, h = resultado
-                writer.writerow([nome_arquivo, x, y, w, h])
-                print(f"✅ Coordenadas salvas para {nome_arquivo}")
+            if coordenadas_fixas and aplicar_para_todas:
+                x, y, w, h = coordenadas_fixas
+            else:
+                resultado = selecionar_area(imagem, nome_arquivo)
+                if resultado is None:
+                    continue
+                x, y, w, h, aplicar_para_todas = resultado
+                if aplicar_para_todas:
+                    coordenadas_fixas = (x, y, w, h)
+
+            writer.writerow([nome_arquivo, x, y, w, h])
+            print(f"✅ Coordenadas salvas para {nome_arquivo}")
 
     print(f"\n📝 Todas as seleções foram salvas em: {caminho_saida}")
 
