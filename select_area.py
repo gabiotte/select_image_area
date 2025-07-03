@@ -1,6 +1,7 @@
 import cv2
 import os
 import csv
+import argparse
 
 def selecionar_area(imagem, imagem_path):
     altura_max = 1000
@@ -31,7 +32,7 @@ def selecionar_area(imagem, imagem_path):
             else:
                 print("Entrada inválida. Digite 'R', 'C' ou 'A'.")
 
-def processar_pasta(pasta_imagens):
+def processar_dir(pasta_imagens):
     extensoes_validas = (".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff")
     imagens = [f for f in os.listdir(pasta_imagens) if f.lower().endswith(extensoes_validas)]
     imagens.sort()
@@ -72,8 +73,17 @@ def processar_pasta(pasta_imagens):
     print(f"\n📝 Todas as seleções foram salvas em: {caminho_saida}")
 
 if __name__ == "__main__":
-    pasta = input("Digite o caminho da pasta com as imagens: ").strip()
-    if not os.path.isdir(pasta):
-        print("Pasta inválida ou não encontrada.")
+    parser = argparse.ArgumentParser(
+        description="Processa um diretório contendo imagens"
+    )
+    parser.add_argument(
+        "--diretorio", type=str, required=True,
+        help="Caminho da diretório com as imagens"
+    )
+
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.diretorio):
+        print("Diretório inválida ou não encontrada.")
     else:
-        processar_pasta(pasta)
+        processar_dir(args.diretorio)
