@@ -10,7 +10,7 @@ def selecionar_area(imagem, imagem_path):
 
     while True:
         print(f"\n🔍 Selecionando área em: {imagem_path}")
-        roi = cv2.selectROI("Selecionar Área", imagem, fromCenter=False, showCrosshair=True)
+        roi = cv2.selectROI("Selecionar Área", cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY), fromCenter=False, showCrosshair=True)
         cv2.destroyAllWindows()
 
         x, y, w, h = roi
