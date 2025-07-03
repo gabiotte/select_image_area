@@ -3,6 +3,8 @@ import os
 import csv
 import argparse
 
+extensoes_validas = (".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff")
+
 def selecionar_area(imagem, imagem_path):
     altura_max = 1000
     if imagem.shape[0] > altura_max:
@@ -32,16 +34,15 @@ def selecionar_area(imagem, imagem_path):
             else:
                 print("Entrada inválida. Digite 'R', 'C' ou 'A'.")
 
-def processar_dir(pasta_imagens):
-    extensoes_validas = (".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff")
-    imagens = [f for f in os.listdir(pasta_imagens) if f.lower().endswith(extensoes_validas)]
+def processar_imagens_em(dir):
+
+    imagens = [f for f in os.listdir(dir) if f.lower().endswith(extensoes_validas)]
     imagens.sort()
 
     if not imagens:
-        print("Nenhuma imagem válida encontrada na pasta.")
-        return
+        return False
 
-    caminho_saida = os.path.join(pasta_imagens, "selecoes.csv")
+    caminho_saida = os.path.join(dir, "selecoes.csv")
     with open(caminho_saida, mode="w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Imagem", "x", "y", "w", "h"])
@@ -50,7 +51,7 @@ def processar_dir(pasta_imagens):
         aplicar_para_todas = False
 
         for i, nome_arquivo in enumerate(imagens):
-            caminho_completo = os.path.join(pasta_imagens, nome_arquivo)
+            caminho_completo = os.path.join(dir, nome_arquivo)
             imagem = cv2.imread(caminho_completo)
 
             if imagem is None:
@@ -71,6 +72,23 @@ def processar_dir(pasta_imagens):
             print(f"✅ Coordenadas salvas para {nome_arquivo}")
 
     print(f"\n📝 Todas as seleções foram salvas em: {caminho_saida}")
+
+def processar_dir(dir):
+    
+    # Primeiro, tenta processar o próprio diretório
+    if processar_imagens_em(dir):
+        return
+    
+    # Se não houver imagens, procura subdiretórios com imagens
+    subdirs = [os.path.join(dir, d) for d in os.listdir(dir) if os.path.isdir(os.path.join(dir, d))]
+    encontrou = False
+
+    for subdir in subdirs:
+        if processar_imagens_em(subdir):
+            encontrou = True
+    
+    if not encontrou:
+        print("❌ Nenhuma imagem válida encontrada no diretório ou em seus subdiretórios.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
